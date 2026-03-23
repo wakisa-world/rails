@@ -26,6 +26,8 @@ mkdir -p \
   "$ROOT_DIR/data/daily_logs" \
   "$ROOT_DIR/data/notion_exports" \
   "$ROOT_DIR/data/product_ideas" \
+  "$ROOT_DIR/data/note_drafts" \
+  "$ROOT_DIR/data/daily_reviews" \
   "$ROOT_DIR/data/weekly_reviews" \
   "$ROOT_DIR/data/context"
 
@@ -44,6 +46,7 @@ FOCUS_THEME="$ROOT_DIR/data/context/focus_theme.md"
 JSON_OUT="$ROOT_DIR/data/daily_logs/$DATE.json"
 NOTION_OUT="$ROOT_DIR/data/notion_exports/$DATE.md"
 PRODUCT_OUT="$ROOT_DIR/data/product_ideas/$DATE.md"
+NOTE_OUT="$ROOT_DIR/data/note_drafts/$DATE.md"
 
 # --- 重複チェック ---
 if [ -f "$JSON_OUT" ]; then
@@ -110,7 +113,7 @@ else:
 " 2>/dev/null)
 
 # --- JSON検証・保存 ---
-echo "[3/5] 結果を保存しています..."
+echo "[3/6] 結果を保存しています..."
 
 if echo "$JSON_CONTENT" | python3 -m json.tool > /dev/null 2>&1; then
   echo "$JSON_CONTENT" > "$JSON_OUT"
@@ -124,8 +127,8 @@ else
   exit 1
 fi
 
-# --- Notion MD・商品案MD を生成 ---
-echo "[4/5] Markdownファイルを生成しています..."
+# --- Notion MD・商品案MD・note記事 を生成 ---
+echo "[4/6] Markdownファイルを生成しています..."
 
 python3 "$SCRIPT_DIR/export_notion.py" "$JSON_OUT" "$NOTION_OUT"
 echo "  ✓ Notion用MD: $NOTION_OUT"
@@ -133,10 +136,15 @@ echo "  ✓ Notion用MD: $NOTION_OUT"
 python3 "$SCRIPT_DIR/export_product.py" "$JSON_OUT" "$PRODUCT_OUT"
 echo "  ✓ 商品案ストック: $PRODUCT_OUT"
 
+python3 "$SCRIPT_DIR/save_note.py" "$JSON_OUT" "$NOTE_OUT"
+echo "  ✓ note記事ドラフト: $NOTE_OUT"
+
 # --- コンテキスト更新 ---
-echo "[5/5] コンテキストを更新しています..."
+echo "[5/6] コンテキストを更新しています..."
 cp "$JSON_OUT" "$PREV_LOG"
 echo "  ✓ previous_log.json を更新"
+
+echo "[6/6] 完了チェック..."
 
 # --- 結果サマリー表示 ---
 echo ""
@@ -152,11 +160,15 @@ with open(sys.argv[1]) as f:
 idx = d.get("selected_post_index", 0)
 post = d["x_posts"][idx]
 product = d["product_idea"]
+note = d.get("note_article", {})
 print(f"\n【採用投稿】（{post['type']}）")
 print(f"  {post['hook']}")
 print(f"  {post['body']}")
 print(f"\n【商品案タイトル】")
 print(f"  {product['title']}（スコア: {product['score']}点）")
+if note:
+    print(f"\n【note記事タイトル】")
+    print(f"  {note.get('title', '記載なし')}（スコア: {note.get('score', 0)}点）")
 print(f"\n【明日の改善仮説】")
 print(f"  {d['tomorrow_hypothesis']}")
 print(f"\n【保存ファイル】")
@@ -166,9 +178,11 @@ PYEOF
 echo ""
 echo "  data/notion_exports/$DATE.md"
 echo "  data/product_ideas/$DATE.md"
+echo "  data/note_drafts/$DATE.md"
 echo ""
 echo "次のステップ："
 echo "  1. X投稿の文字数をXの入力画面で確認する"
 echo "  2. 採用投稿を実際にXに投稿する（手動）"
-echo "  3. 商品案をnote等で実際に作成する（任意）"
+echo "  3. data/note_drafts/$DATE.md を確認・編集してnoteに投稿する"
+echo "  4. 商品案をnote等で実際に作成する（任意）"
 echo ""

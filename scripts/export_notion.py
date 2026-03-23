@@ -40,6 +40,21 @@ def generate_notion_md(data: dict) -> str:
         is_selected = (i == idx)
         posts_md += "\n" + post_section(post, labels[i], is_selected) + "\n"
 
+    # note記事セクション
+    note = data.get("note_article", {})
+    if note:
+        note_section = f"""## note記事
+- タイトル：{note.get('title', '記載なし')}
+- 想定読者：{note.get('target', '記載なし')}
+- 目的：{note.get('purpose', '記載なし')}
+- メンバーシップ導線：{note.get('membership_angle', '記載なし')}
+- スコア：{note.get('score', 0)} / 100
+- スコア理由：{note.get('score_reason', '記載なし')}
+
+"""
+    else:
+        note_section = "## note記事\n（未生成）\n\n"
+
     # 今日の要点3つ（自動生成）
     key_points = _extract_key_points(data)
 
@@ -68,6 +83,8 @@ def generate_notion_md(data: dict) -> str:
 ## X投稿案
 {posts_md}
 ---
+
+{note_section}---
 
 # 採用したもの
 - 採用投稿：{labels[idx] if idx < len(labels) else '記載なし'}

@@ -5,10 +5,12 @@
 ### 朝のルーティン
 
 ```
-1. （任意）focus_theme.md を更新する          ← 2分
-2. 日次実験を実行する                          ← 1分（実行するだけ）
-3. 採用投稿の文字数を確認してXに投稿する       ← 3〜5分
-4. 商品案を見て、実際に作れるか判断する        ← 2〜3分
+1. （任意）focus_theme.md を更新する                      ← 2分
+2. 日次実験を実行する                                      ← 1分（実行するだけ）
+3. 採用投稿の文字数を確認してXに投稿する                   ← 3〜5分
+4. data/note_drafts/YYYY-MM-DD.md を確認・軽く編集する     ← 3〜5分
+5. noteに投稿する（任意・手動）                            ← 2〜3分
+6. 商品案を見て、実際に作れるか判断する                    ← 2〜3分
 ```
 
 ---
@@ -43,6 +45,9 @@ python3 scripts/export_notion.py data/daily_logs/2026-03-23.json data/notion_exp
 
 # JSON→商品案ストックMD
 python3 scripts/export_product.py data/daily_logs/2026-03-23.json data/product_ideas/2026-03-23.md
+
+# JSON→note記事ドラフトMD
+python3 scripts/save_note.py data/daily_logs/2026-03-23.json data/note_drafts/2026-03-23.md
 ```
 
 ---
@@ -74,22 +79,23 @@ python3 scripts/export_product.py data/daily_logs/2026-03-23.json data/product_i
 
 ```
 context/focus_theme.md
-context/good_themes.md    ──┐
-context/bad_themes.md       │
-context/previous_log.json   │
-                            ↓
-                  prompts/daily_system_prompt.md
-                            ↓
-                     Claude が実験実行
-                            ↓
-              data/daily_logs/YYYY-MM-DD.json
-                     ↙             ↘
-    export_notion.py             export_product.py
-          ↓                            ↓
-  notion_exports/                product_ideas/
-  YYYY-MM-DD.md                  YYYY-MM-DD.md
-                            ↓
-              context/previous_log.json（上書き更新）
+context/good_themes.md         ──┐
+context/bad_themes.md            │
+context/previous_log.json        │
+context/membership_strategy.md   │
+                                 ↓
+                   prompts/daily_system_prompt.md
+                                 ↓
+                          Claude が実験実行
+                                 ↓
+                 data/daily_logs/YYYY-MM-DD.json
+            ↙          ↓          ↓          ↘
+export_notion.py  export_product.py  save_note.py
+      ↓                ↓                ↓
+notion_exports/   product_ideas/   note_drafts/
+YYYY-MM-DD.md    YYYY-MM-DD.md    YYYY-MM-DD.md
+                                 ↓
+                 context/previous_log.json（上書き更新）
 ```
 
 ---
@@ -127,6 +133,55 @@ context/previous_log.json   │
 ### 前日ログが参照されていない
 - `data/context/previous_log.json` が正しく更新されているか確認する
 - `cat data/context/previous_log.json | python3 -m json.tool` で検証する
+
+---
+
+## 朝5時の自動実行（cron設定）
+
+### cron に登録する方法
+
+```bash
+# crontab を開く
+crontab -e
+
+# 以下の1行を追記する（/home/user/rails を実際のパスに変更すること）
+0 5 * * * cd /home/user/rails && ./scripts/run_daily.sh >> /home/user/rails/data/cron_log.txt 2>&1
+```
+
+### 解説
+- `0 5 * * *` ：毎朝5:00に実行（日本時間にするにはサーバーのタイムゾーンを確認すること）
+- 出力は `data/cron_log.txt` に蓄積される
+- `run_daily.sh` の中で `claude` CLI が呼ばれる（要インストール）
+
+### タイムゾーンの確認
+
+```bash
+# 現在のタイムゾーン確認
+timedatectl
+
+# 日本時間（JST）に設定する場合
+sudo timedatectl set-timezone Asia/Tokyo
+```
+
+### Claude Code（GUI版）での代替方法
+- Claude Code を朝に開いて「今日の日次実験を実行して」と伝えるだけでも動く
+- CLIが不要なため、最も手軽な方法
+
+---
+
+## note記事の管理
+
+`data/note_drafts/` に毎日のドラフトが蓄積される。
+
+### 投稿前のチェックリスト
+- [ ] 1000字前後か確認する（大きくずれている場合は補足・要約する）
+- [ ] 誇大表現・煽り文句がないか確認する
+- [ ] 「今日の気づき」「再現のヒント」「次回への興味」が含まれているか確認する
+- [ ] メンバーシップへの自然な誘導文があるか確認する
+
+### メンバーシップ移行の目安
+`data/context/membership_strategy.md` に方針を記載している。
+30日分以上蓄積され、スキ数が安定してきたタイミングで有料化を検討する。
 
 ---
 

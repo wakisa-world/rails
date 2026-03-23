@@ -57,6 +57,15 @@ AIによる生成ではなく、**データ変換と保存**が主務。
   "selected_post_index": 0,
   "selection_reason": "",
   "tomorrow_hypothesis": "",
+  "note_article": {
+    "title": "",
+    "target": "",
+    "purpose": "",
+    "body": "",
+    "membership_angle": "",
+    "score": 0,
+    "score_reason": ""
+  },
   "operation_note": {
     "human_check_points": ["", ""],
     "reuse_idea": ""
@@ -71,6 +80,10 @@ AIによる生成ではなく、**データ変換と保存**が主務。
 ### 3. 商品案ストックMarkdown
 **保存先**: `data/product_ideas/YYYY-MM-DD.md`
 **生成**: `scripts/export_product.py` が日次JSONから変換
+
+### 4. note記事ドラフトMarkdown
+**保存先**: `data/note_drafts/YYYY-MM-DD.md`
+**生成**: `scripts/save_note.py` が日次JSONから変換
 
 ## コンテキスト更新
 実験完了後、`data/context/previous_log.json` を今日のJSONで上書きする。
