@@ -97,7 +97,40 @@ X投稿を使う場合:
 
 ---
 
+## 動作確認（APIキー不要）
+
+```bash
+python scripts/test_mock.py
+```
+
+APIキーなしでフルフロー（保存・チェック・整形・バンドル出力）を確認できる。
+
+---
+
 ## 使い方
+
+### セットアップ確認
+
+```bash
+python scripts/check_setup.py
+```
+
+### テーマ管理
+
+```bash
+# 一覧
+python scripts/manage_themes.py list
+python scripts/manage_themes.py list --status unused
+
+# 追加
+python scripts/manage_themes.py add --title "テーマ名" --source "出典" --category "信用"
+
+# 統計
+python scripts/manage_themes.py stats
+
+# 使用済み→未使用に戻す
+python scripts/manage_themes.py reset "テーマ名"
+```
 
 ### 日次一括実行（推奨）
 
@@ -168,6 +201,22 @@ python scripts/export_note_bundle.py --date 2026-03-25
 - 出典不明の名言の断定利用
 - 「金持ち確定」等の誇張
 - 露骨な情報商材表現
+
+---
+
+### 過去出力の確認
+
+```bash
+# 出力一覧
+python scripts/view_output.py --list
+
+# 今日の出力全体
+python scripts/view_output.py
+
+# 特定日・特定セクション
+python scripts/view_output.py --date 2026-03-25 --section x
+python scripts/view_output.py --date 2026-03-25 --section review
+```
 
 ---
 

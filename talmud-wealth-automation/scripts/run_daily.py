@@ -139,8 +139,8 @@ def main(
 
         # 7. noteバンドル
         console.print("\n[bold]7. noteバンドル出力[/bold]")
-        from scripts.export_note_bundle import _export_bundle
-        bundle_path = _export_bundle(formatted, date_str)
+        from app.exporter import export_bundle
+        bundle_path = export_bundle(formatted, date_str)
         console.print(f"   → {bundle_path}")
 
         # テーマを使用済みに
