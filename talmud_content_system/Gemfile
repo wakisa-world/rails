@@ -1,0 +1,22 @@
+source "https://rubygems.org"
+
+ruby "~> 3.2"
+
+gem "rails", "~> 7.1"
+gem "sqlite3", "~> 1.4"
+gem "puma", ">= 5.0"
+
+# Markdown rendering
+gem "redcarpet", "~> 3.6"
+
+# Views
+gem "tailwindcss-rails", "~> 2.0"
+
+# Development
+group :development, :test do
+  gem "debug", platforms: %i[mri mswin mswin64 mingw x64_mingw]
+end
+
+group :development do
+  gem "web-console"
+end

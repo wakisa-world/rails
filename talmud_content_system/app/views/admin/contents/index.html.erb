@@ -1,0 +1,67 @@
+<style>
+  .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+  .admin-header h1 { font-size: 1.3rem; }
+  .btn { display: inline-block; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer; }
+  .btn-primary { background: #2d3748; color: white; }
+  .btn-primary:hover { background: #1a202c; }
+  .btn-sm { padding: 0.3rem 0.7rem; font-size: 0.78rem; }
+  .btn-danger { background: #fff; color: #e53e3e; border: 1px solid #fc8181; }
+  .btn-danger:hover { background: #fff5f5; }
+  .btn-publish { background: #276749; color: white; }
+  .status-badge { display: inline-block; font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 99px; }
+  .status-draft { background: #edf2f7; color: #718096; }
+  .status-published { background: #f0fff4; color: #276749; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th { text-align: left; padding: 0.6rem 0.75rem; border-bottom: 2px solid #e2e8f0; font-size: 0.78rem; color: #718096; letter-spacing: 0.05em; }
+  td { padding: 0.85rem 0.75rem; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+  tr:hover td { background: #fafafa; }
+  .td-actions { display: flex; gap: 0.4rem; }
+</style>
+
+<div class="admin-header">
+  <h1>コンテンツ管理</h1>
+  <%= link_to "＋ 新規作成", new_admin_content_path, class: "btn btn-primary" %>
+</div>
+
+<% if @contents.any? %>
+  <table>
+    <thead>
+      <tr>
+        <th>タイトル</th>
+        <th>カテゴリ</th>
+        <th>ステータス</th>
+        <th>X文字数</th>
+        <th>更新日</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @contents.each do |content| %>
+        <tr>
+          <td><%= link_to content.title, admin_content_path(content) %></td>
+          <td><%= content.theme_category %></td>
+          <td>
+            <span class="status-badge status-<%= content.status %>">
+              <%= content.draft? ? "下書き" : "公開中" %>
+            </span>
+          </td>
+          <td><%= content.x_post_length %> / 280</td>
+          <td><%= content.updated_at.strftime("%m/%d %H:%M") %></td>
+          <td>
+            <div class="td-actions">
+              <%= link_to "編集", edit_admin_content_path(content), class: "btn btn-sm btn-primary" %>
+              <% if content.draft? %>
+                <%= button_to "公開", publish_admin_content_path(content), method: :patch, class: "btn btn-sm btn-publish" %>
+              <% end %>
+              <%= button_to "削除", admin_content_path(content), method: :delete,
+                    data: { confirm: "「#{content.title}」を削除しますか？" },
+                    class: "btn btn-sm btn-danger" %>
+            </div>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p style="color: #a0aec0; padding: 2rem 0;">コンテンツがありません。最初のコンテンツを作成してください。</p>
+<% end %>

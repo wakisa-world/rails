@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>タルムード資産論</title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <style>
+      /* minimal prose styles - replace with Tailwind in production */
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: "Hiragino Mincho ProN", "Yu Mincho", Georgia, serif; color: #1a1a1a; background: #fafaf8; line-height: 1.8; }
+      a { color: #2c5282; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .container { max-width: 760px; margin: 0 auto; padding: 0 1.5rem; }
+      header { border-bottom: 1px solid #e2e8f0; padding: 1.5rem 0; margin-bottom: 3rem; }
+      header .brand { font-size: 1.1rem; letter-spacing: 0.05em; color: #2d3748; }
+      header nav { margin-top: 0.5rem; font-size: 0.85rem; color: #718096; }
+      footer { border-top: 1px solid #e2e8f0; margin-top: 4rem; padding: 2rem 0; font-size: 0.85rem; color: #718096; }
+      .notice { background: #f0fff4; border: 1px solid #9ae6b4; color: #276749; padding: 0.75rem 1rem; border-radius: 4px; margin-bottom: 1.5rem; font-size: 0.9rem; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="brand">
+          <%= link_to "タルムード資産論", root_path %>
+        </div>
+        <nav>
+          <%= link_to "コンテンツ一覧", root_path %> ·
+          <%= link_to "管理画面", admin_root_path %>
+        </nav>
+      </header>
+
+      <% if notice.present? %>
+        <div class="notice"><%= notice %></div>
+      <% end %>
+
+      <%= yield %>
+
+      <footer>
+        <p>「富は、思考の質から生まれる。」</p>
+      </footer>
+    </div>
+  </body>
+</html>

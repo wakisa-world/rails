@@ -1,0 +1,135 @@
+<style>
+  .form-section { margin-bottom: 2.5rem; }
+  .form-section-title { font-size: 0.75rem; letter-spacing: 0.1em; color: #a0aec0; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.4rem; margin-bottom: 1.25rem; }
+  .form-group { margin-bottom: 1.25rem; }
+  label { display: block; font-size: 0.85rem; font-weight: bold; color: #4a5568; margin-bottom: 0.4rem; }
+  label .hint { font-weight: normal; color: #a0aec0; font-size: 0.78rem; margin-left: 0.5rem; }
+  input[type=text], select, textarea { width: 100%; border: 1px solid #cbd5e0; border-radius: 4px; padding: 0.6rem 0.75rem; font-size: 0.9rem; font-family: inherit; line-height: 1.6; }
+  input[type=text]:focus, select:focus, textarea:focus { outline: none; border-color: #4299e1; box-shadow: 0 0 0 3px rgba(66,153,225,0.15); }
+  textarea { resize: vertical; }
+  .char-count { font-size: 0.75rem; color: #a0aec0; margin-top: 0.25rem; text-align: right; }
+  .char-count.over { color: #e53e3e; }
+  .error-messages { background: #fff5f5; border: 1px solid #fc8181; color: #c53030; border-radius: 4px; padding: 1rem; margin-bottom: 1.5rem; font-size: 0.85rem; }
+  .error-messages ul { margin-left: 1.25rem; margin-top: 0.5rem; }
+  .form-actions { display: flex; gap: 1rem; align-items: center; }
+  .btn { display: inline-block; padding: 0.6rem 1.25rem; border-radius: 4px; font-size: 0.9rem; border: none; cursor: pointer; }
+  .btn-primary { background: #2d3748; color: white; }
+  .btn-primary:hover { background: #1a202c; }
+  .btn-secondary { background: white; color: #4a5568; border: 1px solid #cbd5e0; }
+</style>
+
+<% if content.errors.any? %>
+  <div class="error-messages">
+    <strong><%= content.errors.count %>件のエラーがあります：</strong>
+    <ul>
+      <% content.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with(model: [:admin, content]) do |f| %>
+
+  <%# 基本情報 %>
+  <div class="form-section">
+    <div class="form-section-title">基本情報</div>
+
+    <div class="form-group">
+      <%= f.label :title, "テーマタイトル" %>
+      <%= f.text_field :title, placeholder: "例：ラビ・サフラの誓い――「自分が決めた価格」を守った商人の話" %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :source do %>
+        原典 <span class="hint">（任意）</span>
+      <% end %>
+      <%= f.text_field :source, placeholder: "例：バビロニア・タルムード マコット24a" %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :theme_category, "テーマカテゴリ" %>
+      <%= f.select :theme_category,
+            [["選択してください", ""]] + Content::THEME_CATEGORIES.map { |c| [c, c] },
+            {},
+            { class: "" } %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :status, "ステータス" %>
+      <%= f.select :status, [["下書き", "draft"], ["公開", "published"]] %>
+    </div>
+  </div>
+
+  <%# X投稿 %>
+  <div class="form-section">
+    <div class="form-section-title">X 投稿</div>
+    <div class="form-group">
+      <%= f.label :x_post do %>
+        投稿文 <span class="hint">（280文字以内）</span>
+      <% end %>
+      <%= f.text_area :x_post, rows: 6,
+            placeholder: "クイズ形式で導入を見せる。答えは言い切らない。最後にnote導線を入れる。",
+            data: { char_counter: "280" } %>
+      <div class="char-count" id="x_post_count"><%= content.x_post.to_s.length %> / 280</div>
+    </div>
+  </div>
+
+  <%# 無料note %>
+  <div class="form-section">
+    <div class="form-section-title">無料 note</div>
+
+    <div class="form-group">
+      <%= f.label :free_note_title, "タイトル" %>
+      <%= f.text_field :free_note_title, placeholder: "例：自分が決めた値段で売る――タルムードに残るラビ・サフラの静かな選択" %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :free_note_body do %>
+        本文 <span class="hint">（Markdown対応）</span>
+      <% end %>
+      <%= f.text_area :free_note_body, rows: 20,
+            placeholder: "物語全文 → 状況整理 → 争点 → 読者への問い → 有料noteへの自然な導線" %>
+    </div>
+  </div>
+
+  <%# 有料note %>
+  <div class="form-section">
+    <div class="form-section-title">有料 note</div>
+
+    <div class="form-group">
+      <%= f.label :paid_note_title, "タイトル" %>
+      <%= f.text_field :paid_note_title, placeholder: "例：「内なる誓い」が信用をつくる――ラビ・サフラの価格論と、現代の値付け・契約・ブランドへの応用" %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :paid_note_body do %>
+        本文 <span class="hint">（Markdown対応）</span>
+      <% end %>
+      <%= f.text_area :paid_note_body, rows: 25,
+            placeholder: "解釈 → 複数視点 → 現代応用（価格/契約/発信/信用構築）→ 実践ポイント" %>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <%= f.submit "保存する", class: "btn btn-primary" %>
+    <%= link_to "キャンセル", admin_contents_path, class: "btn btn-secondary" %>
+  </div>
+
+<% end %>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const xPost = document.getElementById("content_x_post");
+    const counter = document.getElementById("x_post_count");
+    if (!xPost || !counter) return;
+
+    function update() {
+      const len = xPost.value.length;
+      counter.textContent = len + " / 280";
+      counter.classList.toggle("over", len > 280);
+    }
+    xPost.addEventListener("input", update);
+    update();
+  });
+</script>

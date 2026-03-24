@@ -1,0 +1,71 @@
+<style>
+  .admin-content-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; }
+  .admin-content-header h1 { font-size: 1.2rem; line-height: 1.4; flex: 1; margin-right: 1rem; }
+  .admin-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+  .btn { display: inline-block; padding: 0.5rem 1rem; border-radius: 4px; font-size: 0.85rem; border: none; cursor: pointer; }
+  .btn-primary { background: #2d3748; color: white; }
+  .btn-publish { background: #276749; color: white; }
+  .btn-danger { background: white; color: #e53e3e; border: 1px solid #fc8181; }
+  .status-badge { display: inline-block; font-size: 0.78rem; padding: 0.25rem 0.7rem; border-radius: 99px; margin-bottom: 0.5rem; }
+  .status-draft { background: #edf2f7; color: #718096; }
+  .status-published { background: #f0fff4; color: #276749; }
+  .meta { font-size: 0.82rem; color: #a0aec0; margin-bottom: 2rem; }
+  .section { margin-bottom: 2.5rem; }
+  .section-label { font-size: 0.72rem; letter-spacing: 0.1em; color: #a0aec0; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.4rem; margin-bottom: 1rem; }
+  .x-post-box { background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 1rem 1.25rem; white-space: pre-line; font-size: 0.92rem; line-height: 1.7; }
+  .char-info { font-size: 0.75rem; color: #a0aec0; margin-top: 0.4rem; text-align: right; }
+  .note-title { font-size: 1.05rem; font-weight: bold; margin-bottom: 1rem; }
+  .prose { font-size: 0.9rem; }
+  .prose h1, .prose h2, .prose h3 { margin: 1.25rem 0 0.6rem; font-weight: bold; }
+  .prose h2 { font-size: 1rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.3rem; }
+  .prose p { margin-bottom: 0.75rem; }
+  .prose ul, .prose ol { margin: 0.75rem 0 0.75rem 1.25rem; }
+  .prose blockquote { border-left: 3px solid #e2e8f0; padding-left: 0.75rem; color: #718096; margin: 1rem 0; }
+  .prose strong { font-weight: bold; }
+  .prose hr { border: none; border-top: 1px solid #e2e8f0; margin: 1.5rem 0; }
+</style>
+
+<div class="admin-content-header">
+  <div>
+    <span class="status-badge status-<%= @content.status %>">
+      <%= @content.draft? ? "下書き" : "公開中" %>
+    </span>
+    <h1><%= @content.title %></h1>
+  </div>
+  <div class="admin-actions">
+    <%= link_to "編集", edit_admin_content_path(@content), class: "btn btn-primary" %>
+    <% if @content.draft? %>
+      <%= button_to "公開する", publish_admin_content_path(@content), method: :patch, class: "btn btn-publish" %>
+    <% end %>
+    <%= button_to "削除", admin_content_path(@content), method: :delete,
+          data: { confirm: "削除しますか？" }, class: "btn btn-danger" %>
+  </div>
+</div>
+
+<div class="meta">
+  カテゴリ：<strong><%= @content.theme_category %></strong>
+  <% if @content.source.present? %>
+    ・ 出典：<%= @content.source %>
+  <% end %>
+  <% if @content.published_at %>
+    ・ 公開日：<%= @content.published_at.strftime("%Y年%-m月%-d日 %H:%M") %>
+  <% end %>
+</div>
+
+<div class="section">
+  <div class="section-label">X 投稿</div>
+  <div class="x-post-box"><%= @content.x_post %></div>
+  <div class="char-info"><%= @content.x_post_length %> 文字 / 280文字</div>
+</div>
+
+<div class="section">
+  <div class="section-label">無料 note</div>
+  <div class="note-title"><%= @content.free_note_title %></div>
+  <div class="prose"><%= markdown(@content.free_note_body) %></div>
+</div>
+
+<div class="section">
+  <div class="section-label">有料 note</div>
+  <div class="note-title"><%= @content.paid_note_title %></div>
+  <div class="prose"><%= markdown(@content.paid_note_body) %></div>
+</div>
