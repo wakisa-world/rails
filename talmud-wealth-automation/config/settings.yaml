@@ -1,0 +1,57 @@
+brand:
+  name: "タルムード資産論"
+  tagline: "富は、思考の質から生まれる。"
+  x_display_name: "タルムード資産論"
+  post_time: "05:00"
+  default_tone:
+    - "知的"
+    - "静か"
+    - "本質を突く"
+    - "情報商材っぽくない"
+
+content:
+  x_max_chars: 280
+  free_note_min_chars: 600
+  paid_note_min_chars: 1000
+  cta:
+    x: "物語と論点はnoteへ。"
+    free_note: "この話の解釈と、現代の仕事・商売・資産形成への応用は有料noteで深掘りします。"
+    paid_note: "明日から使える形に変えることが、このブランドの目的です。"
+
+generation:
+  claude_model: "claude-opus-4-6"
+  gpt_model: "gpt-4o"
+  temperature: 0.7
+  max_tokens: 4000
+
+review:
+  criteria:
+    - "知的さ"
+    - "自然さ"
+    - "安っぽさの少なさ"
+    - "Xでのフック"
+    - "無料noteの価値"
+    - "有料noteの課金理由"
+    - "現代応用の具体性"
+    - "ブランド整合性"
+    - "宗教・民族の扱いの丁寧さ"
+
+storage:
+  output_dir: "outputs"
+  review_dir: "reviews"
+  log_dir: "logs"
+  theme_dir: "data/themes"
+
+x:
+  dry_run: true
+
+note:
+  tag_candidates:
+    - "タルムード"
+    - "タルムード資産論"
+    - "ユダヤ思想"
+    - "富の哲学"
+    - "ビジネス思考"
+    - "信用"
+    - "資産形成"
+    - "自己投資"
