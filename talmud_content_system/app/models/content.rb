@@ -20,8 +20,8 @@ class Content < ApplicationRecord
   validates :paid_note_body,  presence: true
   validates :status,          inclusion: { in: STATUSES }
 
-  scope :published, -> { where(status: "published").order(published_at: :desc) }
-  scope :drafts,    -> { where(status: "draft").order(updated_at: :desc) }
+  scope :published,   -> { where(status: "published").order(published_at: :desc) }
+  scope :drafts,      -> { where(status: "draft").order(updated_at: :desc) }
   scope :by_category, ->(cat) { where(theme_category: cat) }
 
   def published?
@@ -38,5 +38,21 @@ class Content < ApplicationRecord
 
   def x_post_length
     x_post.to_s.length
+  end
+
+  def quality_check
+    ContentQualityChecker.new(self).summary
+  end
+
+  def quality_passes?
+    ContentQualityChecker.new(self).passes?
+  end
+
+  def reviewer_prompt
+    ContentPromptBuilder.new(content: self).reviewer_prompt
+  end
+
+  def formatter_prompt
+    ContentPromptBuilder.new(content: self).formatter_prompt
   end
 end

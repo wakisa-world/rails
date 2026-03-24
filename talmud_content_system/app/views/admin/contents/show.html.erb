@@ -69,3 +69,55 @@
   <div class="note-title"><%= @content.paid_note_title %></div>
   <div class="prose"><%= markdown(@content.paid_note_body) %></div>
 </div>
+
+<hr>
+<h2>品質チェック</h2>
+<% quality = @content.quality_check %>
+<p>
+  <strong>総合判定:</strong>
+  <% if quality[:overall] %>
+    <span style="color: green;">✓ 通過</span>
+  <% else %>
+    <span style="color: red;">✗ 要修正（<%= quality[:issue_count] %>件）</span>
+  <% end %>
+</p>
+
+<table border="1" cellpadding="6" cellspacing="0">
+  <thead>
+    <tr>
+      <th>セクション</th>
+      <th>判定</th>
+      <th>問題点</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% quality[:results].each do |result| %>
+      <tr>
+        <td><%= result.section %></td>
+        <td style="color: <%= result.pass ? 'green' : 'red' %>"><%= result.label %></td>
+        <td>
+          <% if result.issues.empty? %>
+            問題なし
+          <% else %>
+            <ul>
+              <% result.issues.each do |issue| %>
+                <li><%= issue %></li>
+              <% end %>
+            </ul>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<hr>
+<h2>プロンプト</h2>
+<details>
+  <summary>Reviewerプロンプトを表示</summary>
+  <pre style="background:#f5f5f5;padding:12px;overflow:auto;font-size:12px;"><%= @content.reviewer_prompt %></pre>
+</details>
+<details>
+  <summary>Formatterプロンプトを表示</summary>
+  <pre style="background:#f5f5f5;padding:12px;overflow:auto;font-size:12px;"><%= @content.formatter_prompt %></pre>
+</details>
