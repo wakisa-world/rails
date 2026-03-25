@@ -1,8 +1,13 @@
-"""コンテンツ生成モジュール。Claude / GPT を呼び出してコンテンツを生成する。"""
+"""コンテンツ生成モジュール。Claude / GPT を呼び出してコンテンツを生成する。
+
+デフォルトは ClaudeCodeWriter（claude CLIサブプロセス経由）。
+APIキー不要、Claude Pro ログイン認証で動作する。
+"""
 
 from __future__ import annotations
 
 import json
+import subprocess
 from datetime import datetime
 from typing import Any
 
@@ -43,8 +48,70 @@ class BaseWriter:
         )
 
 
+class ClaudeCodeWriter(BaseWriter):
+    """claude CLI サブプロセス経由でコンテンツを生成する。
+
+    APIキー不要。Claude Pro ログイン認証（claude login）で動作する。
+    事前に `claude login` を一度実行しておくこと。
+    """
+
+    def generate(self, theme: str, source: str = "") -> GeneratedContent:
+        logger.info(f"Claude Code (Pro認証) でコンテンツ生成開始: {theme}")
+
+        user_message = f"テーマ: {theme}"
+        if source:
+            user_message += f"\n出典: {source}"
+
+        full_prompt = f"{self._system_prompt}\n\n---\n\n{user_message}"
+
+        content_text = self._call_claude_cli(full_prompt)
+        if not content_text:
+            raise RuntimeError(
+                "claude CLI からのレスポンスが空です。\n"
+                "確認: `claude login` で Pro 認証が完了しているか確認してください。"
+            )
+
+        generated = self._parse_response(content_text, ContentSource.CLAUDE)
+        logger.info(f"Claude Code 生成完了: X投稿 {generated.x_char_count}文字")
+        return generated
+
+    def _call_claude_cli(self, prompt: str) -> str:
+        """claude CLI を呼び出してテキストを取得する。"""
+        # まず --output-format text で試みる
+        result = subprocess.run(
+            ["claude", "-p", prompt, "--tools", "", "--output-format", "text"],
+            capture_output=True,
+            text=True,
+            timeout=180,
+            stdin=subprocess.DEVNULL,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+
+        # フォールバック: --output-format json の result フィールド
+        result = subprocess.run(
+            ["claude", "-p", prompt, "--tools", "", "--output-format", "json"],
+            capture_output=True,
+            text=True,
+            timeout=180,
+            stdin=subprocess.DEVNULL,
+        )
+        if result.returncode != 0:
+            raise RuntimeError(f"claude CLI エラー: {result.stderr.strip()}")
+
+        try:
+            data = json.loads(result.stdout)
+            return data.get("result", "")
+        except json.JSONDecodeError:
+            return result.stdout.strip()
+
+
 class ClaudeWriter(BaseWriter):
-    """Anthropic Claude を使ってコンテンツを生成する。"""
+    """Anthropic Python SDK 経由でコンテンツを生成する（APIキー必須）。
+
+    ANTHROPIC_API_KEY と usage credits が必要。
+    通常は ClaudeCodeWriter を使うこと。
+    """
 
     def __init__(self) -> None:
         super().__init__()
@@ -63,7 +130,7 @@ class ClaudeWriter(BaseWriter):
         return self._client
 
     def generate(self, theme: str, source: str = "") -> GeneratedContent:
-        logger.info(f"Claude でコンテンツ生成開始: {theme}")
+        logger.info(f"Claude API でコンテンツ生成開始: {theme}")
         client = self._get_client()
         gen_cfg = settings.generation
 
@@ -80,7 +147,7 @@ class ClaudeWriter(BaseWriter):
 
         content_text = response.content[0].text
         result = self._parse_response(content_text, ContentSource.CLAUDE)
-        logger.info(f"Claude 生成完了: X投稿 {result.x_char_count}文字")
+        logger.info(f"Claude API 生成完了: X投稿 {result.x_char_count}文字")
         return result
 
 
@@ -129,7 +196,14 @@ class GPTWriter(BaseWriter):
 
 
 def get_writer(source: str = "claude") -> BaseWriter:
-    """source に応じたライターを返す。"""
+    """source に応じたライターを返す。
+
+    - "claude" (デフォルト): ClaudeCodeWriter — claude CLI経由、APIキー不要
+    - "claude-api": ClaudeWriter — Anthropic SDK経由、APIキー必須
+    - "gpt": GPTWriter — OpenAI SDK経由、APIキー必須
+    """
     if source == "gpt":
         return GPTWriter()
-    return ClaudeWriter()
+    if source == "claude-api":
+        return ClaudeWriter()
+    return ClaudeCodeWriter()

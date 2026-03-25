@@ -1,10 +1,14 @@
 """
 コンテンツ生成スクリプト。
 
+デフォルトは claude CLI 経由（Claude Pro ログイン認証）。APIキー不要。
+
 Usage:
     python scripts/generate_content.py
     python scripts/generate_content.py --theme "約束を軽くする人に富は残らない"
-    python scripts/generate_content.py --theme "..." --source "バヴァ・メツィア49a" --gpt
+    python scripts/generate_content.py --theme "..." --source "バヴァ・メツィア49a"
+    python scripts/generate_content.py --claude-api   # APIキー版（課金あり）
+    python scripts/generate_content.py --gpt          # GPT版（OpenAI APIキー必要）
 """
 
 from __future__ import annotations
@@ -36,11 +40,17 @@ logger = setup_logger("generate", settings.log_dir())
 @click.option("--theme", "-t", default=None, help="テーマを手動指定")
 @click.option("--source", "-s", default="", help="出典を手動指定")
 @click.option("--date", "-d", default=None, help="保存日付 (YYYY-MM-DD)、省略時は今日")
-@click.option("--gpt", is_flag=True, default=False, help="GPT版も生成する（比較用）")
+@click.option("--claude-api", "claude_api", is_flag=True, default=False, help="Anthropic APIキー版を使う（課金あり）")
+@click.option("--gpt", is_flag=True, default=False, help="GPT版も生成する（比較用、OpenAI APIキー必要）")
 @click.option("--skip-review", is_flag=True, default=False, help="ルールベースのチェックをスキップ")
-def main(theme: str | None, source: str, date: str | None, gpt: bool, skip_review: bool) -> None:
+def main(theme: str | None, source: str, date: str | None, claude_api: bool, gpt: bool, skip_review: bool) -> None:
     date_str = date or today_str()
-    console.print(Panel(f"[bold]タルムード資産論 — コンテンツ生成[/bold]\n日付: {date_str}", style="blue"))
+    writer_type = "claude-api" if claude_api else "claude"
+    auth_label = "Claude API (APIキー)" if claude_api else "Claude Code (Pro認証)"
+    console.print(Panel(
+        f"[bold]タルムード資産論 — コンテンツ生成[/bold]\n日付: {date_str}\n認証: {auth_label}",
+        style="blue",
+    ))
 
     # テーマ選定
     selected_theme = theme_selector.select(manual=theme)
@@ -49,9 +59,9 @@ def main(theme: str | None, source: str, date: str | None, gpt: bool, skip_revie
         selected_theme.source = source
 
     # Claude 生成
-    console.print("\n[yellow]Claude でコンテンツを生成中...[/yellow]")
+    console.print(f"\n[yellow]{auth_label} でコンテンツを生成中...[/yellow]")
     try:
-        writer = get_writer("claude")
+        writer = get_writer(writer_type)
         claude_content = writer.generate(selected_theme.title, selected_theme.source)
     except Exception as e:
         console.print(f"[red]Claude 生成エラー: {e}[/red]")

@@ -58,26 +58,48 @@ talmud-wealth-automation/
 
 ## セットアップ
 
-### 1. 依存インストール
+> **APIキー不要。Claude Pro ログイン認証で動作します。**
+
+### 前提: Claude Code のインストール
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+インストール済み確認:
+
+```bash
+claude --version
+```
+
+### 1. Claude Pro でログイン（初回のみ）
+
+```bash
+claude login
+```
+
+ブラウザが開くので Claude Pro アカウントでログイン。
+以降はトークンが `~/.claude.json` に保存されるため、再ログイン不要。
+
+### 2. 依存インストール
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. 環境変数を設定
+### 3. 環境変数を設定
 
 ```bash
 cp .env.example .env
-# .env を編集して APIキーを入力
+# デフォルト設定のまま使える（APIキー不要）
 ```
 
-最低限必要なキー:
-- `ANTHROPIC_API_KEY` — コンテンツ生成・レビュー・整形に使用
+APIキーは**不要**。必要に応じてコメントアウトされた項目を設定する:
+- `ANTHROPIC_API_KEY` — `--claude-api` フラグ使用時のみ（課金あり）
+- `OPENAI_API_KEY` — `--gpt` フラグ使用時のみ
+- `X_API_KEY` 等 — X自動投稿を使う場合のみ
 
-X投稿を使う場合:
-- `X_API_KEY` / `X_API_SECRET` / `X_ACCESS_TOKEN` / `X_ACCESS_TOKEN_SECRET`
-
-### 3. テーマを追加
+### 4. テーマを追加
 
 `data/themes/` にJSONファイルを置く。
 
@@ -97,13 +119,22 @@ X投稿を使う場合:
 
 ---
 
-## 動作確認（APIキー不要）
+## 動作確認
+
+### モック（claude login 不要）
 
 ```bash
 python scripts/test_mock.py
 ```
 
-APIキーなしでフルフロー（保存・チェック・整形・バンドル出力）を確認できる。
+APIキー・ログインなしでフルフロー（保存・チェック・整形・バンドル出力）を確認できる。
+
+### Claude Pro 認証で実際に生成
+
+```bash
+# claude login 完了後
+python scripts/generate_content.py
+```
 
 ---
 
@@ -148,9 +179,12 @@ python scripts/run_daily.py --gpt           # GPT版も生成して比較
 ### ステップごとに実行
 
 ```bash
-# 1. 生成
+# 1. 生成（Claude Pro 認証、APIキー不要）
 python scripts/generate_content.py
 python scripts/generate_content.py --theme "約束を軽くする人に富は残らない"
+
+# APIキー版を使う場合（.env に ANTHROPIC_API_KEY が必要）
+python scripts/generate_content.py --claude-api
 
 # 2. レビュー
 python scripts/review_content.py --date 2026-03-25
